@@ -5,22 +5,29 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 }
 function Table() {
-  let rolll=1;
-  const [user, setUser] = useState({
-    id: '',
-    name: '',
-    profession: '',
-    salary: ''
-  })
-
-  const [tempName, setTempName] = useState('');
-  const [tempProf, setTempProf] = useState('');
-  const [tempSal, setTempSal] = useState('');
-  const [tempId,setTempId]= useState('');
-
+  const [userName,setUserName]=useState('');
+  const [userProf,setUserProf]=useState('');
+  const [userSalary,setUserSalary]=useState('');
+  const [userId,setUserId]=useState('');
+  
   const [disName,setDisName]=useState('');
   const [disProf,setDisProf]=useState('');
   const [disSal,setDisSal]=useState('');
+
+  const [user,setUser]=useState({ 
+    id:'',
+    name:'',
+    profession:'',
+    salary:''
+   });
+
+    const [flag,setFlag]=useState(false);
+   useEffect(()=>{
+    setUserName('');
+    setUserId('');
+    setUserProf('');
+    setUserSalary('');
+   },[flag])
 
   const [errorName, setErrorName] = useState('');
   const [errorProf, setErrorProf] = useState('');
@@ -40,24 +47,27 @@ useEffect(()=>{
 
   const handleName = (e) => {
     const str = e.target.value;
-    setUser({ ...user, name: str })
+    setUserName(str);
     setSucesss('');
   }
   const handleProf = (e) => {
     const str = e.target.value;
-    setUser({ ...user, profession: str })
+    // setUser({ ...user, profession: str })
+    setUserProf(str);
     setSucesss('');
   }
   const handleSalary = (e) => {
     const str = e.target.value;
-    setUser({ ...user, salary: str })
+    // setUser({ ...user, salary: str })
+    setUserSalary(str);
     setSucesss('');
   }
 
   const editUser = (entry) => {
-    setUser({...user,name:entry.name});
-    setUser({...user,profession:entry.profession});
-    setUser({...user,salary:entry.salary});
+   setUserId(entry.id)
+    setUserName(entry.name);
+    setUserProf(entry.profession);
+    setUserSalary(entry.salary);
   }
   const viewUser=(view)=>{
     setDisName(view.name);
@@ -66,76 +76,85 @@ useEffect(()=>{
   }
   function handleEdit(){
     let count = 3;
-    if (user.salary.length < 1) {
+    if (userSalary.length < 1) {
       setErrorSal('sal cannot be empty')
       count++;
+      return
     }
-    else if (isNaN(user.salary)) {
+    else if (isNaN(userSalary)) {
       setErrorSal('only enter numbers')
       count++;
+      return
     }
     else {
       setErrorSal('');
       count--;
     }
-    if (user.name.length < 1) {
+    if (userName < 1) {
       setErrorName('name cannot be empty')
       count++;
+      return
     }
     else {
       setErrorName('')
       count--;
     }
-    if (user.profession.length < 1) {
+    if (userProf.length < 1) {
       setErrorProf('profession cannot be empty')
       count++;
+      return
     }
     else {
       setErrorProf('');
       count--;
     }
     if (count === 0) {
-      const updatedd = users.filter((usee) => usee.id != tempId)
+      const updatedd = users.filter((usee) => usee.id != user.id)
       setUsers(updatedd);
-    //  setUser({ ...user, name:tempName });
-    //  setUser({...user,profession:tempProf});
-    //  setUser({...user,salary:tempSal});
-    //  setUser({...user,id:tempId});
+      localStorage.setItem('users', JSON.stringify(updatedd));
 
+      setUser({id:userId,name:userName,profession:userProf,salary:userSalary});
     const update = [...users, user]
     setUsers(update);
     localStorage.setItem('users', JSON.stringify(update));
+
     setSucesss('Successfully added')
-    }
+  }
+  setFlag(prev=>!prev);
+  console.log(users);
 
 
   }
 
   function handleAdd() {
     let count = 3;
-    if (user.salary.length < 1) {
+    if (userSalary.length < 1) {
       setErrorSal('sal cannot be empty')
       count++;
+      return
     }
-    else if (isNaN(user.salary)) {
+    else if (isNaN(userSalary)) {
       setErrorSal('only enter numbers')
       count++;
+      return
     }
     else {
       setErrorSal('');
       count--;
     }
-    if (user.name.length < 1) {
+    if (userName.length < 1) {
       setErrorName('name cannot be empty')
       count++;
+      return
     }
     else {
       setErrorName('')
       count--;
     }
-    if (user.profession.length < 1) {
+    if (userProf.length < 1) {
       setErrorProf('profession cannot be empty')
       count++;
+      return
     }
     else {
       setErrorProf('');
@@ -144,15 +163,21 @@ useEffect(()=>{
     if (count === 0) {
       adding();
     }
+     setUserId('')  
+    setUserName('');
+    setUserSalary('');
+    setUserProf('');
   }
 
-  function adding() {
-    setUser({ ...user, id: Date.now() });
+
+   function adding () {
+     console.log(users)
+    setUser({id:generateId(),name:userName,profession:userProf,salary:userSalary});
     const update = [...users, user]
     setUsers(update);
-    localStorage.setItem('users', JSON.stringify(update));
-    setSucesss('Successfully added')
-
+     localStorage.setItem('users', JSON.stringify(update));
+    setSucesss('Successfully added'); 
+   
   }
 
 
@@ -210,9 +235,9 @@ useEffect(()=>{
                 </tr>
               </thead>
               <tbody>
-                {users.map((use) =>
+                {users.map((use,index) =>
                   <tr>
-                    <td className='p-2'>{rolll++}</td>
+                    <td className='p-2'>{index}</td>
                     <td className='p-2'>{use.name}</td>
                     <td className='p-2'>{use.profession}</td>
                     <td className='p-2'>{use.salary}</td>
@@ -249,13 +274,13 @@ useEffect(()=>{
               <div className='justify-content-evenly d-md-flex'>
                 <div className='fields p-3 border mt-1'>
                   Name:
-                  <input className='form-control ' value={user.name} onChange={handleName} placeholder='enter employee name' />
+                  <input className='form-control ' value={userName} onChange={handleName} placeholder='enter employee name' />
                   <p className='text-danger'>{errorName}</p>
                   Profession:
-                  <input className=' form-control' value={user.profession} onChange={handleProf} placeholder='enter profession' />
+                  <input className=' form-control' value={userProf} onChange={handleProf} placeholder='enter profession' />
                   <p className='text-danger'>{errorProf}</p>
                   Salary:
-                  <input className='form-control' value={user.salary} onChange={handleSalary} placeholder='enter salary' />
+                  <input className='form-control' value={userSalary} onChange={handleSalary} placeholder='enter salary' />
                   <p className='text-danger'>{errorSal}</p>
                 </div>
               </div>
@@ -281,11 +306,11 @@ useEffect(()=>{
             </div>
             <div className="modal-body">
               <div className='fields p-3 border-dark border  mt-1'>
-                <input className='form-control' value={user.name} onChange={handleName} placeholder='enter employee name' />
+                <input className='form-control' value={userName} onChange={handleName} placeholder='enter employee name' />
                 <p className='text-danger'>{errorName}</p>
-                <input className=' form-control' value={user.profession} onChange={handleProf} placeholder='enter profession' />
+                <input className=' form-control' value={userProf} onChange={handleProf} placeholder='enter profession' />
                 <p className='text-danger'>{errorProf}</p>
-                <input className='form-control' value={user.salary} onChange={handleSalary} placeholder='enter salary' />
+                <input className='form-control' value={userSalary} onChange={handleSalary} placeholder='enter salary' />
                 <p className='text-danger'>{errorSal}</p>
               </div>
             </div>
