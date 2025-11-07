@@ -35,7 +35,7 @@ const db = getFirestore(app);
 const empCollectionRef = collection(db, "employees");
 
 function Employee() {
-    
+
     const [userName, setUserName] = useState("");
     const [userProf, setUserProf] = useState("");
     const [userSalary, setUserSalary] = useState("");
@@ -52,11 +52,13 @@ function Employee() {
     const [displaySalary, setDisplaySalary] = useState('');
     const [displayProfession, setDisplayProfession] = useState('');
 
+    const [editing, setEditing] = useState(false);
+
     const fetchData = async () => {
         try {
-            const q =  query(empCollectionRef, orderBy("time", "asc"));
-             const snapshot = await getDocs(q);
-            // const snapshot = await getDocs(empCollectionRef);
+            // setLoading(true)
+            const q = query(empCollectionRef, orderBy("time", "asc"));
+            const snapshot = await getDocs(q);
             const docs = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
@@ -66,25 +68,29 @@ function Employee() {
         } catch (err) {
             console.error(" Error fetching employees:", err);
         }
+        // setLoading(false);
     };
 
     useEffect(() => {
         fetchData();
     }, [flag]);
+
+        
     useEffect(() => {
         setTimeout(() => {
             setLoading(false);
         }, 2000);
     });
 
-    useEffect(()=>{
+    useEffect(() => {
         setErrorName('');
         setErrorProf('');
         setErrorSal('');
-    },[userName,userProf,userSalary])
+    }, [userName, userProf, userSalary])
 
 
-     const notify = () => toast.success("Employee added succesfully", { autoClose: 3000 });
+    const notify = () => toast.success("Employee added succesfully", { autoClose: 3000 });
+    const notifyUpdate = () => toast.warning("Employee updated", { autoClose: 3000 });
     const notifydelete = () => toast.info("Employee deleted successfully", { autoClose: 3000 });
 
     const validateFields = () => {
@@ -118,9 +124,35 @@ function Employee() {
         return valid;
     };
 
-    const handleAdd = async (e) => {
+    function userEdit(tempuser) {
+        handleEdit(tempuser);
+        setEditing(true);
+    }
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateFields()) return;
+
+        if (editing) {
+            try {
+                const empDoc = doc(db, "employees", userId);
+                await updateDoc(empDoc, {
+                    name: userName,
+                    profession: userProf,
+                    salary: userSalary,
+                });
+                setUserId("");
+                setUserName("");
+                setUserProf("");
+                setUserSalary("");
+                setFlag((p) => !p);
+                setEditing(false);
+
+            } catch (err) {
+                console.error("Error updating employee:", err);
+            }
+            return
+        }
 
         const newEmp = {
             time: Date.now(),
@@ -150,32 +182,17 @@ function Employee() {
         setUserSalary(emp.salary);
     };
 
-    const handleUpdate = async () => {
-        if (!validateFields()) return;
-
-        try {
-            const empDoc = doc(db, "employees", userId);
-            await updateDoc(empDoc, {
-                name: userName,
-                profession: userProf,
-                salary: userSalary,
-            });
-
-            setUserId("");
-            setUserName("");
-            setUserProf("");
-            setUserSalary("");
-            setFlag((p) => !p);
-        } catch (err) {
-            console.error("Error updating employee:", err);
-        }
-    };
     const handleDisplay = (view) => {
         setDisplayName(view.name);
         setDisplayProfession(view.profession);
         setDisplaySalary(view.salary);
     }
-
+    const clearing = () => {
+        setUserName('');
+        setUserProf('');
+        setUserSalary('');
+        setEditing(false);
+    }
 
     const handleDelete = async (id) => {
         try {
@@ -200,9 +217,10 @@ function Employee() {
 
     return (
 
+
         <div>
-             <ToastContainer/>
-            
+            <ToastContainer />
+
             <div>
                 <div className='justify-content-evenly d-md-flex mt-3'>
                     <h1 className='bg-success text-white p-2 titlee '>Actimize Software Solutions</h1>
@@ -210,11 +228,11 @@ function Employee() {
                 <div>
                     <h3 className='mx-5 px-5'>Employee List :</h3>
                     <div className='first d-flex justify-content-end'>
-                        <button type="button" className="btn btn-primary " data-bs-toggle="modal" data-bs-target="#fields">
+                        <button type="button" className="btn btn-primary " onClick={clearing} data-bs-toggle="modal" data-bs-target="#fields">
                             Add Employee here
                         </button>
                     </div>
-                   
+
                     <div className='d-sm-block d-md-none'>
                         {Array.isArray(users) && users.map((use, index) =>
                             <div className="card mx-auto" style={{ width: '18rem' }} key={use.id || index}>
@@ -224,7 +242,7 @@ function Employee() {
                                     <p>Salary: {use.salary}</p>
                                 </div>
                                 <div className='justify-content-evenly d-md-flex '>
-                                    <button className='btn btn-primary' onClick={() => handleEdit(use)} data-bs-toggle="modal" data-bs-target="#edit">
+                                    <button className='btn btn-primary' onClick={() => userEdit(use)} data-bs-toggle="modal" data-bs-target="#fields">
                                         <i className="mx-2 bi bi-pencil-square"></i>
                                     </button>
                                     <button className='btn btn-primary' onClick={() => handleDisplay(use)} data-bs-toggle="modal" data-bs-target="#view" >
@@ -258,7 +276,7 @@ function Employee() {
                                         <td className='p-2'>{use.salary}</td>
                                         <td className='p-2'>
                                             <div className='justify-content-evenly d-md-flex '>
-                                                <button className='btn btn-primary' onClick={() => handleEdit(use)} data-bs-toggle="modal" data-bs-target="#edit" >
+                                                <button className='btn btn-primary' onClick={() => userEdit(use)} data-bs-toggle="modal" data-bs-target="#fields" >
                                                     <i className="mx-2 bi bi-pencil-square"></i>
                                                 </button>
                                                 <button className='btn btn-primary' onClick={() => handleDisplay(use)} data-bs-toggle="modal" data-bs-target="#view" >
@@ -282,14 +300,13 @@ function Employee() {
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">Add employee</h5>
+                            <h5 className="modal-title">{editing ? 'Edit Employee' : 'Add Employee'}</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div className="modal-body">
-                            <div className='fields p-3 border mt-1 '>
-                            {/* <ToastContainer/> */}
+                            <div className='fields border border-success p-3 border mt-1 '>
                                 Name:
-                                <input className='form-control ' value={userName} onChange={(e) => setUserName(e.target.value)} placeholder='Enter Employee Name' />
+                                <input className='form-control border' value={userName} onChange={(e) => setUserName(e.target.value)} placeholder='Enter Employee Name' />
                                 <p className='text-danger'>{errorName}</p>
                                 Profession:
                                 <input className=' form-control' value={userProf} onChange={(e) => setUserProf(e.target.value)} placeholder='Enter Profession' />
@@ -303,37 +320,9 @@ function Employee() {
                         <div className="modal-footer">
                             <div className='justify-content-evenly d-md-flex '>
 
-                                <button onClick={handleAdd} className='btn btn-success text-white'>Add employee</button>
+                                <button onClick={handleSubmit} className='btn btn-success text-white'>{editing ? 'Edit Employee' : 'Add Employee'}</button>
                             </div>
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="modal" tabIndex="-1" id='edit'>
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title">Edit</h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body">
-                            <div className='fields p-3 border-dark border  mt-1'>
-                                Name:
-                                <input className='form-control' value={userName} onChange={(e) => setUserName(e.target.value)} placeholder='Enter Employee Name' />
-                                <p className='text-danger'>{errorName}</p>
-                                Profession:
-                                <input className=' form-control' value={userProf} onChange={(e) => setUserProf(e.target.value)} placeholder='Enter Profession' />
-                                <p className='text-danger'>{errorProf}</p>
-                                Salary:
-                                <input className='form-control' value={userSalary} onChange={(e) => setUserSalary(e.target.value)} placeholder='Enter Salary' />
-                                <p className='text-danger'>{errorSal}</p>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" className="btn btn-primary"  onClick={handleUpdate}>Save changes</button>
+                            <button type="button" className="btn btn-secondary" onClick={clearing} data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
@@ -362,26 +351,8 @@ function Employee() {
                 </div>
             </div>
 
-            <div className="modal fade" id="confirmDelete" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h1 className="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body">
 
-                            <h3>Are you sure, you want to delete this user?</h3>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={handleDelete} >Yes</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }
-
 export default Employee;
