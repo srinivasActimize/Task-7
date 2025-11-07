@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Audio } from 'react-loader-spinner';
+
 import {
     initializeApp
 } from "firebase/app";
@@ -11,6 +13,8 @@ import {
     deleteDoc,
     doc
 } from "firebase/firestore";
+
+import { Loader } from "./Loader";
 
 
 const firebaseConfig = {
@@ -38,6 +42,7 @@ function Employee() {
     const [errorProf, setErrorProf] = useState("");
     const [errorSal, setErrorSal] = useState("");
     const [flag, setFlag] = useState(false);
+    const [loading,setLoading]=useState(true);
 
     const [displayName, setDisplayName] = useState('');
     const [displaySalary, setDisplaySalary] = useState('');
@@ -60,18 +65,31 @@ function Employee() {
     useEffect(() => {
         fetchData();
     }, [flag]);
+    useEffect(()=>{
+        setTimeout(()=>{
+            setLoading(false);
+        },2000);
+    });
 
     const validateFields = () => {
         let valid = true;
         if (!userName.trim()) {
             setErrorName("Name cannot be empty");
             valid = false;
+        }
+        else if(/[^a-zA-Z]/.test(userName)){
+            setErrorName("name cannot contains other characters");
+
         } else setErrorName("");
 
         if (!userProf.trim()) {
             setErrorProf("Profession cannot be empty");
             valid = false;
-        } else setErrorProf("");
+        } 
+        else if(/[^a-zA-Z]/.test(userProf)){
+            setErrorProf("profession cannot contains other characters");
+        }
+        else setErrorProf("");
 
         if (!userSalary.trim()) {
             setErrorSal("Salary cannot be empty");
@@ -150,14 +168,23 @@ function Employee() {
 
     const handleDelete = async (id) => {
         try {
+            const a = window.confirm('do you want to delete');
+            if(a){
             const empDoc = doc(db, "employees", id);
             await deleteDoc(empDoc);
             setMessage(" Deleted successfully!");
             setFlag((p) => !p);
+            }
+            
         } catch (err) {
             console.error(" Error deleting employee:", err);
         }
     };
+
+
+    if(loading){
+        return <Loader/>
+    }
 
     return (
 
@@ -174,6 +201,7 @@ function Employee() {
                         </button>
                     </div>
                     <div className='d-sm-block d-md-none'>
+                        {/* <Loader/> */}
                         {Array.isArray(users) && users.map((use, index) =>
                             <div className="card mx-auto" style={{ width: '18rem' }} key={use.id || index}>
                                 <div className="card-body">
@@ -279,10 +307,13 @@ function Employee() {
                         </div>
                         <div className="modal-body">
                             <div className='fields p-3 border-dark border  mt-1'>
+                                Name:
                                 <input className='form-control' value={userName} onChange={(e) => setUserName(e.target.value)} placeholder='Enter Employee Name' />
                                 <p className='text-danger'>{errorName}</p>
+                                Profession:
                                 <input className=' form-control' value={userProf} onChange={(e) => setUserProf(e.target.value)} placeholder='Enter Profession' />
                                 <p className='text-danger'>{errorProf}</p>
+                                Salary:
                                 <input className='form-control' value={userSalary} onChange={(e) => setUserSalary(e.target.value)} placeholder='Enter Salary' />
                                 <p className='text-danger'>{errorSal}</p>
                             </div>
@@ -306,7 +337,7 @@ function Employee() {
                             <div className='card'>
                                 <div className="card-body">
                                     <h3>Name: {displayName}</h3>
-                                    <h6>Profession:{displayProfession}</h6>
+                                    <h6>Profession: {displayProfession}</h6>
                                     <p>Salary: {displaySalary}</p>
                                 </div>
                             </div>
