@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Audio } from 'react-loader-spinner';
+
 
 import {
     initializeApp
@@ -32,17 +32,18 @@ const db = getFirestore(app);
 const empCollectionRef = collection(db, "employees");
 
 function Employee() {
+    
     const [userName, setUserName] = useState("");
     const [userProf, setUserProf] = useState("");
     const [userSalary, setUserSalary] = useState("");
     const [userId, setUserId] = useState("");
     const [users, setUsers] = useState([]);
-    const [message, setMessage] = useState("");
+
     const [errorName, setErrorName] = useState("");
     const [errorProf, setErrorProf] = useState("");
     const [errorSal, setErrorSal] = useState("");
     const [flag, setFlag] = useState(false);
-    const [loading,setLoading]=useState(true);
+    const [loading, setLoading] = useState(true);
 
     const [displayName, setDisplayName] = useState('');
     const [displaySalary, setDisplaySalary] = useState('');
@@ -65,10 +66,10 @@ function Employee() {
     useEffect(() => {
         fetchData();
     }, [flag]);
-    useEffect(()=>{
-        setTimeout(()=>{
+    useEffect(() => {
+        setTimeout(() => {
             setLoading(false);
-        },2000);
+        }, 2000);
     });
 
     const validateFields = () => {
@@ -77,7 +78,7 @@ function Employee() {
             setErrorName("Name cannot be empty");
             valid = false;
         }
-        else if(/[^a-zA-Z]/.test(userName)){
+        else if (/[^a-zA-Z]/.test(userName)) {
             setErrorName("name cannot contains other characters");
 
         } else setErrorName("");
@@ -85,8 +86,8 @@ function Employee() {
         if (!userProf.trim()) {
             setErrorProf("Profession cannot be empty");
             valid = false;
-        } 
-        else if(/[^a-zA-Z]/.test(userProf)){
+        }
+        else if (/[^a-zA-Z]/.test(userProf)) {
             setErrorProf("profession cannot contains other characters");
         }
         else setErrorProf("");
@@ -114,14 +115,14 @@ function Employee() {
 
         try {
             await addDoc(empCollectionRef, newEmp);
-            setMessage("Added successfully!");
+
             setUserName("");
             setUserProf("");
             setUserSalary("");
             setFlag((p) => !p);
         } catch (err) {
             console.error(" Error adding employee:", err);
-            setMessage(err.message);
+
         }
     };
 
@@ -143,7 +144,7 @@ function Employee() {
                 profession: userProf,
                 salary: userSalary,
             });
-            setMessage(" Updated successfully!");
+
             setUserId("");
             setUserName("");
             setUserProf("");
@@ -169,26 +170,27 @@ function Employee() {
     const handleDelete = async (id) => {
         try {
             const a = window.confirm('do you want to delete');
-            if(a){
-            const empDoc = doc(db, "employees", id);
-            await deleteDoc(empDoc);
-            setMessage(" Deleted successfully!");
-            setFlag((p) => !p);
+            if (a) {
+                const empDoc = doc(db, "employees", id);
+                await deleteDoc(empDoc);
+
+                setFlag((p) => !p);
             }
-            
+
         } catch (err) {
             console.error(" Error deleting employee:", err);
         }
     };
 
 
-    if(loading){
-        return <Loader/>
+    if (loading) {
+        return <Loader />
     }
 
     return (
 
         <div>
+            
             <div>
                 <div className='justify-content-evenly d-md-flex mt-3'>
                     <h1 className='bg-success text-white p-2 titlee '>Actimize Software Solutions</h1>
@@ -210,15 +212,15 @@ function Employee() {
                                     <p>Salary: {use.salary}</p>
                                 </div>
                                 <div className='justify-content-evenly d-md-flex '>
-                                    <a className='btn btn-primary' onClick={() => handleEdit(use)} data-bs-toggle="modal" data-bs-target="#edit">
+                                    <button className='btn btn-primary' onClick={() => handleEdit(use)} data-bs-toggle="modal" data-bs-target="#edit">
                                         <i className="mx-2 bi bi-pencil-square"></i>
-                                    </a>
-                                    <a className='btn btn-primary' onClick={() => handleDisplay(use)} data-bs-toggle="modal" data-bs-target="#view" >
-                      <i className="mx-2 bi bi-eye"></i>
-                    </a>
-                                    <a className='btn btn-primary' onClick={() => handleDelete(use.id)}>
+                                    </button>
+                                    <button className='btn btn-primary' onClick={() => handleDisplay(use)} data-bs-toggle="modal" data-bs-target="#view" >
+                                        <i className="mx-2 bi bi-eye"></i>
+                                    </button>
+                                    <button className='btn btn-primary' onClick={() => handleDelete(use.id)}>
                                         <i className="mx-2 bi bi-trash"></i>
-                                    </a>
+                                    </button>
                                 </div>
 
                             </div>)}
@@ -244,15 +246,15 @@ function Employee() {
                                         <td className='p-2'>{use.salary}</td>
                                         <td className='p-2'>
                                             <div className='justify-content-evenly d-md-flex '>
-                                                <a className='btn btn-primary' onClick={() => handleEdit(use)} data-bs-toggle="modal" data-bs-target="#edit" >
+                                                <button className='btn btn-primary' onClick={() => handleEdit(use)} data-bs-toggle="modal" data-bs-target="#edit" >
                                                     <i className="mx-2 bi bi-pencil-square"></i>
-                                                </a>
-                                                <a className='btn btn-primary' onClick={() => handleDisplay(use)} data-bs-toggle="modal" data-bs-target="#view" >
+                                                </button>
+                                                <button className='btn btn-primary' onClick={() => handleDisplay(use)} data-bs-toggle="modal" data-bs-target="#view" >
                                                     <i className="mx-2 bi bi-eye"></i>
-                                                </a>
-                                                <a className='btn btn-primary' onClick={() => handleDelete(use.id)}  >
+                                                </button>
+                                                <button className='btn btn-primary' onClick={() => handleDelete(use.id)}  >
                                                     <i className="mx-2 bi bi-trash"></i>
-                                                </a>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
