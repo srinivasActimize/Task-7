@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-
+import { ToastContainer, toast } from 'react-toastify';
 
 import {
     initializeApp
@@ -11,8 +11,11 @@ import {
     addDoc,
     updateDoc,
     deleteDoc,
-    doc
+    doc,
+    query,
+    orderBy
 } from "firebase/firestore";
+
 
 import { Loader } from "./Loader";
 
@@ -51,7 +54,9 @@ function Employee() {
 
     const fetchData = async () => {
         try {
-            const snapshot = await getDocs(empCollectionRef);
+            const q =  query(empCollectionRef, orderBy("time", "asc"));
+             const snapshot = await getDocs(q);
+            // const snapshot = await getDocs(empCollectionRef);
             const docs = snapshot.docs.map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
@@ -71,6 +76,16 @@ function Employee() {
             setLoading(false);
         }, 2000);
     });
+
+    useEffect(()=>{
+        setErrorName('');
+        setErrorProf('');
+        setErrorSal('');
+    },[userName,userProf,userSalary])
+
+
+     const notify = () => toast.success("Employee added succesfully", { autoClose: 3000 });
+    const notifydelete = () => toast.info("Employee deleted successfully", { autoClose: 3000 });
 
     const validateFields = () => {
         let valid = true;
@@ -108,6 +123,7 @@ function Employee() {
         if (!validateFields()) return;
 
         const newEmp = {
+            time: Date.now(),
             name: userName,
             profession: userProf,
             salary: userSalary,
@@ -115,11 +131,11 @@ function Employee() {
 
         try {
             await addDoc(empCollectionRef, newEmp);
-
             setUserName("");
             setUserProf("");
             setUserSalary("");
             setFlag((p) => !p);
+            notify();
         } catch (err) {
             console.error(" Error adding employee:", err);
 
@@ -161,12 +177,6 @@ function Employee() {
     }
 
 
-
-    // const [remove, setRemove] = useState('');
-    // const deleting=(duser)=>{
-    //   setRemove(duser.id);
-    // }
-
     const handleDelete = async (id) => {
         try {
             const a = window.confirm('do you want to delete');
@@ -175,6 +185,7 @@ function Employee() {
                 await deleteDoc(empDoc);
 
                 setFlag((p) => !p);
+                notifydelete();
             }
 
         } catch (err) {
@@ -190,6 +201,7 @@ function Employee() {
     return (
 
         <div>
+             <ToastContainer/>
             
             <div>
                 <div className='justify-content-evenly d-md-flex mt-3'>
@@ -199,11 +211,11 @@ function Employee() {
                     <h3 className='mx-5 px-5'>Employee List :</h3>
                     <div className='first d-flex justify-content-end'>
                         <button type="button" className="btn btn-primary " data-bs-toggle="modal" data-bs-target="#fields">
-                            Add here
+                            Add Employee here
                         </button>
                     </div>
+                   
                     <div className='d-sm-block d-md-none'>
-                        {/* <Loader/> */}
                         {Array.isArray(users) && users.map((use, index) =>
                             <div className="card mx-auto" style={{ width: '18rem' }} key={use.id || index}>
                                 <div className="card-body">
@@ -274,8 +286,8 @@ function Employee() {
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div className="modal-body">
-                            {/* <div className='align-items-center d-md-flex'> */}
                             <div className='fields p-3 border mt-1 '>
+                            {/* <ToastContainer/> */}
                                 Name:
                                 <input className='form-control ' value={userName} onChange={(e) => setUserName(e.target.value)} placeholder='Enter Employee Name' />
                                 <p className='text-danger'>{errorName}</p>
@@ -286,7 +298,6 @@ function Employee() {
                                 <input className='form-control' value={userSalary} onChange={(e) => setUserSalary(e.target.value)} placeholder='Enter Salary' />
                                 <p className='text-danger'>{errorSal}</p>
                             </div>
-                            {/* </div> */}
                             <p className='text-success'></p>
                         </div>
                         <div className="modal-footer">
@@ -322,7 +333,7 @@ function Employee() {
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" className="btn btn-primary" data-bs-dismiss="modal" onClick={handleUpdate}>Save changes</button>
+                            <button type="button" className="btn btn-primary"  onClick={handleUpdate}>Save changes</button>
                         </div>
                     </div>
                 </div>
@@ -369,8 +380,6 @@ function Employee() {
                     </div>
                 </div>
             </div>
-
-
         </div>
     );
 }
