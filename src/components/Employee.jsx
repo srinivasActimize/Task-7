@@ -15,7 +15,7 @@ import {
     query,
     orderBy
 } from "firebase/firestore";
-
+ 
 
 import { Loader } from "./Loader";
 
@@ -147,6 +147,7 @@ function Employee() {
                 setUserSalary("");
                 setFlag((p) => !p);
                 setEditing(false);
+                notifyUpdate();
 
             } catch (err) {
                 console.error("Error updating employee:", err);
