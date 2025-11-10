@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 
+
+//config firebase
 import {
     initializeApp
 } from "firebase/app";
@@ -30,12 +32,15 @@ const firebaseConfig = {
     measurementId: "G-L4XSNSX5L0"
 };
 
+//initializing firebase
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const empCollectionRef = collection(db, "employees");
 
 function Employee() {
 
+    //states for user details and error handling
     const [userName, setUserName] = useState("");
     const [userProf, setUserProf] = useState("");
     const [userSalary, setUserSalary] = useState("");
@@ -54,9 +59,9 @@ function Employee() {
 
     const [editing, setEditing] = useState(false);
 
+    //fetching data from firebase
     const fetchData = async () => {
         try {
-            // setLoading(true)
             const q = query(empCollectionRef, orderBy("time", "asc"));
             const snapshot = await getDocs(q);
             const docs = snapshot.docs.map((doc) => ({
@@ -68,7 +73,6 @@ function Employee() {
         } catch (err) {
             console.error(" Error fetching employees:", err);
         }
-        // setLoading(false);
     };
 
     useEffect(() => {
@@ -88,11 +92,12 @@ function Employee() {
         setErrorSal('');
     }, [userName, userProf, userSalary])
 
-
+    //toast notifications
     const notify = () => toast.success("Employee added succesfully", { autoClose: 3000 });
     const notifyUpdate = () => toast.warning("Employee updated", { autoClose: 3000 });
     const notifydelete = () => toast.info("Employee deleted successfully", { autoClose: 3000 });
 
+    //validation funciton
     const validateFields = () => {
         let valid = true;
         if (!userName.trim()) {
@@ -129,6 +134,7 @@ function Employee() {
         setEditing(true);
     }
 
+    //handling function for add,edit
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateFields()) return;
@@ -175,7 +181,7 @@ function Employee() {
         }
     };
 
-
+    
     const handleEdit = async (emp) => {
         setUserId(emp.id);
         setUserName(emp.name);
@@ -195,6 +201,7 @@ function Employee() {
         setEditing(false);
     }
 
+    //deleting employee
     const handleDelete = async (id) => {
         try {
             const a = window.confirm('do you want to delete');
@@ -226,7 +233,8 @@ function Employee() {
                 <div className='justify-content-evenly d-md-flex mt-3'>
                     <h1 className='bg-success text-white p-2 titlee '>Actimize Software Solutions</h1>
                 </div>
-                <div>
+                <div> 
+                    {/* button added for adding employee */}
                     <h3 className='mx-5 px-5'>Employee List :</h3>
                     <div className='first d-flex justify-content-end'>
                         <button type="button" className="btn btn-primary " onClick={clearing} data-bs-toggle="modal" data-bs-target="#fields">
@@ -297,6 +305,8 @@ function Employee() {
                 </div>
             </div>
 
+
+                                
             <div className="modal" tabIndex="-1" id='fields' >
                 <div className="modal-dialog">
                     <div className="modal-content">
