@@ -106,8 +106,12 @@ function Employee() {
         }
         else if (/[^a-zA-Z]/.test(userName)) {
             setErrorName("name cannot contains other characters");
+		valid=false;
 
-        } else setErrorName("");
+        } else {
+		setErrorName("");
+		valid=true;
+	}
 
         if (!userProf.trim()) {
             setErrorProf("Profession cannot be empty");
@@ -115,8 +119,12 @@ function Employee() {
         }
         else if (/[^a-zA-Z]/.test(userProf)) {
             setErrorProf("profession cannot contains other characters");
+		valid=false;
         }
-        else setErrorProf("");
+        else{
+	 setErrorProf("");
+	 valid=true;
+	}
 
         if (!userSalary.trim()) {
             setErrorSal("Salary cannot be empty");
@@ -124,7 +132,10 @@ function Employee() {
         } else if (isNaN(userSalary)) {
             setErrorSal("Only enter numbers");
             valid = false;
-        } else setErrorSal("");
+        } else{
+	setErrorSal("");
+	valid=true;
+	}
 
         return valid;
     };
